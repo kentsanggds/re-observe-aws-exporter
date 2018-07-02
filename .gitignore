@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+/cache
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache
+coverage.xml
+test_results.xml
+*,cover
+
+# Translations
+*.mo
+*.pot
+
+# Mac
+*.DS_Store
+environment.sh
+.envrc
+
+celerybeat-schedule
+
+# CloudFoundry
+.cf

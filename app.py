@@ -1,32 +1,52 @@
-from prometheus_client import start_http_server, Summary, Gauge
 import random
 import time
 
-class TotalMounted(object):
-    def __init__(self, name='total_mounted', desc=''):
+import boto3
+from prometheus_client import start_http_server, Summary, Gauge
+
+PORT = 8000
+
+
+class GaugeMetric(object):
+    def __init__(self, aws_call, name, desc=''):
+        self.aws_call = aws_call
         self.name = name
         self.desc = desc
         self.gauge = Gauge(self.name, self.desc)
-    
-    def emmit(self):
+
+    def emit(self):
         result = self.aws_call()
         self.gauge.set(result)
 
-    def aws_call(self):
-        return random.random()
+
+def random_number():
+    return random.random()
 
 
-metrics = [TotalMounted()]
+def s3_bucket_count():
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket('gds-prometheus-targets')
+    res = len(list(bucket.objects.all())) + random.randint(0, 5)    # randint to show that it updates
+    return res
+
+
+metrics = [
+    GaugeMetric(random_number, 'random_number'),
+    GaugeMetric(s3_bucket_count, 's3_bucket_count')
+]
+
 
 # Decorate function with metric.
 def process_request(t):
     for m in metrics:
-        m.emmit()
+        m.emit()
 
     time.sleep(t)
 
+
 def main():
-    start_http_server(8000)
+    print("Running on port {}".format(PORT))
+    start_http_server(PORT)
     # Generate some requests.
     while True:
         process_request(5)
