@@ -26,6 +26,7 @@ class EIPCount(object):
         self.total.set(len(all_ips))
         self.in_use.set(in_use_count)
 
+
 class EBSVolumeCount(object):
     def __init__(self, name, desc=''):
         self.name = name
@@ -44,6 +45,23 @@ class EBSVolumeCount(object):
 
         self.total.set(len(all_volumes))
         self.in_use.set(in_use_count)
+
+class EBSEncryptedVolumeCount(object):
+    def __init__(self, name, desc=''):
+        self.name = name
+        self.desc = desc
+        self.encrypted_total = Gauge(self.name + '_total', self.desc)
+        self.ec2 = boto3.resource('ec2')
+
+    def emit(self):
+        all_volumes = list(self.ec2.volumes.all())
+
+        encrypted_count = 0
+        for volume in all_volumes:
+            if volume.encrypted:
+                encrypted_count += 1
+
+        self.encrypted_total.set(encrypted_count)
 
 
 class S3BucketCount(object):
@@ -72,6 +90,7 @@ metrics = [
     RandomNumber('random_number', 'A random number'),
     EIPCount('eip_count', 'EIP metrics'),
     EBSVolumeCount('ebs_volumes', 'EBS metrics'),
+    EBSEncryptedVolumeCount('ebs_encrypted_volumes', 'Encrypted EBS metrics'),
     S3BucketCount('s3_bucket_count', 'The total number of s3 Buckets')
 ]
 
