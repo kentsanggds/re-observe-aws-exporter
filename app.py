@@ -7,6 +7,25 @@ from prometheus_client import start_http_server, Gauge
 PORT = 8000
 INTERVAL_IN_SECONDS = 1
 
+class EIPCount(object):
+    def __init__(self, name, desc=''):
+        self.name = name
+        self.desc = desc
+        self.total = Gauge(self.name + '_total', self.desc)
+        self.in_use = Gauge(self.name + '_in_use', self.desc)
+        self.ec2 = boto3.client('ec2')
+
+    def emit(self):
+        all_ips = self.ec2.describe_addresses()['Addresses']
+
+        in_use_count = 0
+        for ip in all_ips:
+            if 'AssociationId' in ip:
+                in_use_count += 1
+
+        self.total.set(len(all_ips))
+        self.in_use.set(in_use_count)
+
 class EBSVolumeCount(object):
     def __init__(self, name, desc=''):
         self.name = name
@@ -25,6 +44,7 @@ class EBSVolumeCount(object):
 
         self.total.set(len(all_volumes))
         self.in_use.set(in_use_count)
+
 
 class S3BucketCount(object):
     def __init__(self, name, desc=''):
@@ -50,8 +70,9 @@ class RandomNumber(object):
 
 metrics = [
     RandomNumber('random_number', 'A random number'),
-    EBSVolumeCount('ebs_volumes', 'lol'),
-    #S3BucketCount('s3_bucket_count', 'The total number of s3 Buckets')
+    EIPCount('eip_count', 'EIP metrics'),
+    EBSVolumeCount('ebs_volumes', 'EBS metrics'),
+    S3BucketCount('s3_bucket_count', 'The total number of s3 Buckets')
 ]
 
 
