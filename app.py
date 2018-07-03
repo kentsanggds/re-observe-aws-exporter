@@ -3,6 +3,7 @@ import time
 
 import boto3
 from prometheus_client import start_http_server, Gauge
+from functools import reduce
 
 PORT = 8000
 INTERVAL_IN_SECONDS = 1
@@ -26,49 +27,40 @@ class EIPTotal(object):
         self.total.set(len(all_ips))
         self.in_use_total.set(in_use_total)
 
+class EBS(object):
+    def __init__(self, prefix='ebs', desc='EBS metrics'):
+       self.prefix = prefix 
+       self.desc = desc
+       self.ec2 = boto3.resource('ec2')
 
-class EBSVolumeTotal(object):
-    def __init__(self, prefix='ebs_volumes', desc='Total number of EBS volumes'):
-        self.prefix = prefix
-        self.desc = desc
-        self.total = Gauge(self.prefix + '_total', self.desc)
-        self.in_use_total = Gauge(self.prefix + '_in_use_total', self.desc)
-        self.ec2 = boto3.resource('ec2')
-
-    def emit(self):
-        all_volumes = list(self.ec2.volumes.all())
-
-        in_use_total = 0
-        for volume in all_volumes:
-            if volume.state == 'in-use':
-                in_use_total += 1
-
-        self.total.set(len(all_volumes))
-        self.in_use_total.set(in_use_total)
-
-class EBSEncryptedVolumeTotal(object):
-    def __init__(self, prefix='ebs_volumes_encrypted', desc='Total number of encrypted EBS volumes'):
-        self.prefix = prefix
-        self.desc = desc
-        self.encrypted_total = Gauge(self.prefix + '_total', self.desc)
-        self.ec2 = boto3.resource('ec2')
+       self.metrics = {
+               'Total':{
+                'Gauge': Gauge(self.prefix + '_total', 'Total number of EBS volumes'),
+                'Reducer': (lambda acc, y: acc + 1),
+                },
+               'EncryptedTotal': {
+                'Gauge': Gauge(self.prefix + '_encrypted_total', 'Total number of encrypted EBS volumes'),
+                'Reducer': (lambda acc, y: acc + (1 if y.encrypted else 0)),
+                },
+               'InUseTotal': {
+                'Gauge': Gauge(self.prefix + '_in_use_total', 'Total number of in-use EBS volumes'),
+                'Reducer': (lambda acc, y: acc + (1 if y.state == 'in-use' else 0)),
+                },
+        }
 
     def emit(self):
         all_volumes = list(self.ec2.volumes.all())
 
-        encrypted_count = 0
-        for volume in all_volumes:
-            if volume.encrypted:
-                encrypted_count += 1
-
-        self.encrypted_total.set(encrypted_count)
+        for k in self.metrics:
+            x = reduce(self.metrics[k]['Reducer'], all_volumes, 0)
+            self.metrics[k]['Gauge'].set(x)
 
 
 class S3BucketTotal(object):
     def __init__(self, prefix='s3_bucket', desc='Total number of S3 Buckets'):
         self.prefix = prefix
         self.desc = desc
-        self.total= Gauge(self.prefix + "total", self.desc)
+        self.total= Gauge(self.prefix + "_total", self.desc)
         self.s3 = boto3.resource('s3')
 
     def emit(self):
@@ -89,8 +81,7 @@ class RandomNumber(object):
 metrics = [
     RandomNumber(),
     EIPTotal(),
-    EBSVolumeTotal(),
-    EBSEncryptedVolumeTotal(),
+    EBS(),
     S3BucketTotal()
 ]
 
