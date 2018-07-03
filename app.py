@@ -29,18 +29,6 @@ class RandomNumber(object):
         self.gauge.set(random.random())
 
 
-class GaugeMetric(object):
-    def __init__(self, aws_call, name, desc=''):
-        self.aws_call = aws_call
-        self.name = name
-        self.desc = desc
-        self.gauge = Gauge(self.name, self.desc)
-
-    def emit(self):
-        result = self.aws_call()
-        self.gauge.set(result)
-
-
 metrics = [
     RandomNumber('random_number', 'A random number'),
     S3BucketCount('s3_bucket_count', 'The total number of s3 Buckets')
