@@ -2,7 +2,7 @@ import random
 import time
 
 import boto3
-from prometheus_client import start_http_server, Summary, Gauge
+from prometheus_client import start_http_server, Gauge
 
 PORT = 8000
 
@@ -25,8 +25,7 @@ def random_number():
 
 def s3_bucket_count():
     s3 = boto3.resource('s3')
-    bucket = s3.Bucket('gds-prometheus-targets')
-    res = len(list(bucket.objects.all())) + random.randint(0, 5)    # randint to show that it updates
+    res = len(list(s3.buckets.all()))
     return res
 
 
