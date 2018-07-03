@@ -29,7 +29,7 @@ class EIPTotal(object):
 
 class EBS(object):
     def __init__(self, prefix='ebs', desc='EBS metrics'):
-       self.prefix = prefix 
+       self.prefix = prefix
        self.desc = desc
        self.ec2 = boto3.resource('ec2')
 
