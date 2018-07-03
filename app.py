@@ -6,7 +6,7 @@ from prometheus_client import start_http_server, Gauge
 from functools import reduce
 
 PORT = 8000
-INTERVAL_IN_SECONDS = 1
+INTERVAL_IN_SECONDS = 5
 
 class EIPTotal(object):
     def __init__(self, prefix='eip', desc='Total number of EIPs'):
