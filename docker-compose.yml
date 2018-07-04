@@ -7,7 +7,7 @@ services:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_SESSION_TOKEN
-    command: python /srv/app/app.py
+    command: python /srv/app/app.py -d
     ports:
       - "8000:8000"
 

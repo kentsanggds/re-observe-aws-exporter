@@ -1,8 +1,8 @@
 import random
 import time
-
 import boto3
-from prometheus_client import start_http_server, Gauge
+import argparse
+from prometheus_client import start_http_server, Gauge, generate_latest
 from functools import reduce
 
 PORT = 8000
@@ -91,7 +91,12 @@ def update_metrics():
         m.emit()
 
 
-def main():
+def run_interactive():
+    update_metrics()
+    print(generate_latest().decode("utf-8"))
+
+
+def run_daemon():
     print("Running on port {}".format(PORT))
     start_http_server(PORT)
 
@@ -99,6 +104,18 @@ def main():
         update_metrics()
         time.sleep(INTERVAL_IN_SECONDS)
 
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--daemonize",
+                        help="run metrics exporter as a daemon",
+                        action="store_true")
+    args = parser.parse_args()
+    if args.daemonise:
+        run_daemon()
+    else:
+        run_interactive()
+
+
 if __name__ == '__main__':
-    # Start up the server to expose the metrics.
     main()
