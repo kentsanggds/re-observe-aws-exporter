@@ -5,7 +5,7 @@ import argparse
 from prometheus_client import start_http_server, Gauge, generate_latest
 from functools import reduce
 
-PORT = 8000
+PORT = 8080
 INTERVAL_IN_SECONDS = 5
 
 class EIPTotal(object):
