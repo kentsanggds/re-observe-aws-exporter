@@ -111,7 +111,7 @@ def main():
                         help="run metrics exporter as a daemon",
                         action="store_true")
     args = parser.parse_args()
-    if args.daemonise:
+    if args.daemonize:
         run_daemon()
     else:
         run_interactive()
