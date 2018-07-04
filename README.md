@@ -8,4 +8,6 @@ You'll need to make sure boto3 can make API calls. It reads this from the enviro
 
 ## Running
 
-You can run it locally with `python app.py`. You can spin up a Prometheus, Grafana and instance of the app with `docker-compose up`
+You can run it locally with `python app.py`, this will run the app interactively outputting metrics to stdout. Running the app with `python app.py --daemonize` will run the app daemonized it exposes its metrics on a http server on port 8000.
+ 
+You can spin up a Prometheus, Grafana and instance of the app with `docker-compose up`
